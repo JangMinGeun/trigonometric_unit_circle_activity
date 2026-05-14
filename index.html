@@ -10,18 +10,14 @@
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --line: #d1d5db;
       --accent: #2563eb;
       --accent-soft: #dbeafe;
-      --good: #047857;
       --warn: #b45309;
       --danger: #b91c1c;
       --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -88,7 +84,7 @@
       margin-bottom: 7px;
     }
 
-    input[type="number"], select {
+    input[type="text"], select {
       width: 100%;
       padding: 11px 12px;
       border: 1px solid #cbd5e1;
@@ -97,8 +93,13 @@
       background: white;
     }
 
-    input[type="range"] {
-      width: 100%;
+    input[type="range"] { width: 100%; }
+
+    .input-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
     }
 
     .range-wrap {
@@ -135,9 +136,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      filter: brightness(0.96);
-    }
+    button:hover { filter: brightness(0.96); }
 
     .circle-wrap {
       width: 100%;
@@ -216,9 +215,7 @@
       text-align: center;
     }
 
-    .sign-table th {
-      background: #f3f4f6;
-    }
+    .sign-table th { background: #f3f4f6; }
 
     .current {
       background: #fff7ed !important;
@@ -273,6 +270,8 @@
     .legend .theta::before { background: var(--accent); }
     .legend .ref::before { background: var(--warn); }
     .legend .point::before { background: var(--danger); }
+    .legend .tri1::before { background: #d97706; }
+    .legend .tri2::before { background: #16a34a; }
 
     @media (max-width: 920px) {
       main {
@@ -280,13 +279,8 @@
         padding: 12px 18px 32px;
       }
 
-      header {
-        padding: 24px 18px 10px;
-      }
-
-      .circle-wrap {
-        min-height: 340px;
-      }
+      header { padding: 24px 18px 10px; }
+      .circle-wrap { min-height: 340px; }
     }
   </style>
 </head>
@@ -303,7 +297,8 @@
       <div class="control-grid">
         <div>
           <label for="angleInput">각 θ 입력하기</label>
-          <input id="angleInput" type="number" value="0" min="-360" max="360" step="1" />
+          <input id="angleInput" type="text" value="0" placeholder="예: 150, pi/6, 2*pi/3" />
+          <div class="input-hint">도 단위는 숫자만 입력하고, 호도법은 pi 또는 π를 사용합니다.</div>
         </div>
         <div>
           <label for="funcSelect">확인할 삼각함수</label>
@@ -327,7 +322,9 @@
           <button data-angle="210">210°</button>
           <button data-angle="330">330°</button>
           <button data-angle="-60">-60°</button>
-          <button data-angle="450">450°</button>
+          <button data-angle="pi/6">π/6</button>
+          <button data-angle="2*pi/3">2π/3</button>
+          <button data-angle="-pi/4">−π/4</button>
         </div>
       </div>
 
@@ -371,15 +368,23 @@
             <text x="356" y="374" text-anchor="middle" font-size="19" font-weight="900" fill="#111827">cos +</text>
           </g>
 
+          <path id="firstRefTriangle" d="" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" opacity="0.72" />
+          <path id="currentRefTriangle" d="" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" opacity="0.72" />
+          <text id="firstTriangleLabel" x="" y="" text-anchor="middle" font-size="13" font-weight="800" fill="#92400e">1사분면 기준삼각형</text>
+          <text id="currentTriangleLabel" x="" y="" text-anchor="middle" font-size="13" font-weight="800" fill="#166534">현재 사분면 삼각형</text>
+
           <path id="thetaArc" d="" fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" />
           <path id="refArc" d="" fill="none" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
+          <path id="firstRefArc" d="" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" />
+          <text id="firstRefAlphaLabel" x="" y="" font-size="13" font-weight="800" fill="#f59e0b">α</text>
+
           <line id="ray" x1="250" y1="250" x2="" y2="" stroke="#2563eb" stroke-width="4" stroke-linecap="round" marker-end="url(#arrowBlue)" />
           <line id="dropX" x1="" y1="" x2="" y2="" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 6" />
           <line id="dropY" x1="" y1="" x2="" y2="" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 6" />
           <circle id="point" cx="" cy="" r="7" fill="#b91c1c" />
           <text id="pointLabel" x="" y="" font-size="15" font-weight="700" fill="#b91c1c">P</text>
           <text id="thetaLabel" x="" y="" font-size="16" font-weight="800" fill="#2563eb">θ</text>
-          <text id="refLabel" x="" y="" font-size="16" font-weight="800" fill="#b45309">α</text>
+          <text id="refLabel" x="" y="" font-size="13" font-weight="800" fill="#b45309">기준각 α</text>
         </svg>
       </div>
 
@@ -387,6 +392,8 @@
         <span class="theta">θ의 동경</span>
         <span class="ref">기준각 α</span>
         <span class="point">단위원 위의 점 P</span>
+        <span class="tri1">1사분면 기준삼각형</span>
+        <span class="tri2">현재 사분면 삼각형</span>
       </div>
     </section>
 
@@ -396,7 +403,11 @@
       <div class="info-grid">
         <div class="info-box">
           <div class="label">θ를 0° 이상 360° 미만으로 나타내면</div>
-          <div id="normValue" class="value">0°</div>
+          <div id="normValue" class="value">150°</div>
+        </div>
+        <div class="info-box">
+          <div class="label">θ를 호도법으로 나타내면</div>
+          <div id="radianValue" class="value">5π/6</div>
         </div>
         <div class="info-box">
           <div class="label">사분면</div>
@@ -404,14 +415,15 @@
         </div>
         <div class="info-box">
           <div class="label">기준각 α</div>
-          <div id="refValue" class="value">0°</div>
+          <div id="refValue" class="value">30°</div>
         </div>
+       
       </div>
 
       <div class="formula-box">
-        <div id="mainFormula" class="formula">sin 150° = + sin 30°</div>
+        <div id="mainFormula" class="formula">sin(150°) = + sin(30°)</div>
         <div id="formulaDesc" class="desc">기준각은 30°이고, 제2사분면에서 sin 값은 양수입니다.</div>
-      </div>
+       </div>
 
       <table class="sign-table">
         <thead>
@@ -433,10 +445,10 @@
       <div class="activity-box">
         <h3>학생 활동</h3>
         <ol>
-          <li>먼저 각 θ를 보고 어느 사분면에 있는지 예상한다.</li>
+          <li>각 θ를 보고 어느 사분면에 있는지 예상한다.</li>
+          <li>현재 사분면의 삼각형과 제1사분면의 기준삼각형이 합동임을 확인한다.</li>
           <li>선택한 삼각함수의 부호가 +인지 −인지 판단한다.</li>
-          <li>기준각 α가 얼마인지 말해 본다.</li>
-          <li>화면의 결과와 자신의 판단을 비교한다.</li>
+          <li>기준각 α를 이용해 각 변환 결과를 설명한다.</li>
         </ol>
       </div>
     </aside>
@@ -449,6 +461,7 @@
     const rangeLabel = document.getElementById('rangeLabel');
 
     const normValue = document.getElementById('normValue');
+    const radianValue = document.getElementById('radianValue');
     const quadrantValue = document.getElementById('quadrantValue');
     const refValue = document.getElementById('refValue');
     const coordValue = document.getElementById('coordValue');
@@ -464,10 +477,136 @@
     const refArc = document.getElementById('refArc');
     const thetaLabel = document.getElementById('thetaLabel');
     const refLabel = document.getElementById('refLabel');
+    const firstRefArc = document.getElementById('firstRefArc');
+    const firstRefAlphaLabel = document.getElementById('firstRefAlphaLabel');
+    const firstRefTriangle = document.getElementById('firstRefTriangle');
+    const currentRefTriangle = document.getElementById('currentRefTriangle');
+    const firstTriangleLabel = document.getElementById('firstTriangleLabel');
+    const currentTriangleLabel = document.getElementById('currentTriangleLabel');
 
     const cx = 250;
     const cy = 250;
     const r = 180;
+
+    function formatDeg(n) {
+      if (Math.abs(n - Math.round(n)) < 1e-10) return String(Math.round(n));
+      return n.toFixed(2);
+    }
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b !== 0) {
+        const temp = b;
+        b = a % b;
+        a = temp;
+      }
+      return a;
+    }
+    
+    function formatRadianFromDeg(deg) {
+      const norm = normalizeDeg(deg);
+      const rounded = Math.round(norm * 1000000) / 1000000;
+      if (Math.abs(rounded) < 1e-10) return '0';
+    
+      const numeratorRaw = Math.round(rounded * 1000000);
+      const denominatorRaw = 180 * 1000000;
+      const divisor = gcd(numeratorRaw, denominatorRaw);
+      const numerator = numeratorRaw / divisor;
+      const denominator = denominatorRaw / divisor;
+    
+      if (denominator === 1) {
+        if (numerator === 1) return 'π';
+        return numerator + 'π';
+      }
+      if (numerator === 1) return 'π/' + denominator;
+      return numerator + 'π/' + denominator;
+    }
+
+    function parseAngleInput(raw) {
+      let original = String(raw).trim();
+    
+      if (!original) return { valid: false };
+    
+      // 사용자가 120°, 120도, −60처럼 입력해도 처리되도록 정리
+      original = original
+        .replaceAll('−', '-')
+        .replaceAll('°', '')
+        .replaceAll('도', '')
+        .trim();
+    
+      const hasPi = original.toLowerCase().includes('pi') || original.includes('π');
+    
+      // pi가 없으면 도 단위 숫자로 해석
+      if (!hasPi) {
+        const degrees = Number(original);
+    
+        if (!Number.isFinite(degrees)) {
+          return { valid: false };
+        }
+    
+        return {
+          valid: true,
+          degrees,
+          display: formatDeg(degrees) + '°'
+        };
+      }
+    
+      // pi 또는 π가 있으면 호도법으로 해석
+      let expr = original
+        .toLowerCase()
+        .split(' ').join('')
+        .split('　').join('')
+        .replaceAll('π', 'pi');
+    
+      let withMultiplication = '';
+    
+      for (let i = 0; i < expr.length; i++) {
+        if (expr.slice(i, i + 2) === 'pi') {
+          const prev = withMultiplication[withMultiplication.length - 1];
+          const next = expr[i + 2];
+    
+          if (prev && '0123456789)'.includes(prev)) {
+            withMultiplication += '*';
+          }
+    
+          withMultiplication += 'pi';
+    
+          if (next && '0123456789('.includes(next)) {
+            withMultiplication += '*';
+          }
+    
+          i += 1;
+        } else {
+          withMultiplication += expr[i];
+        }
+      }
+    
+      expr = withMultiplication.split('pi').join('(' + Math.PI + ')');
+    
+      const allowed = '0123456789+-*/().';
+      for (const ch of expr) {
+        if (!allowed.includes(ch)) return { valid: false };
+      }
+    
+      try {
+        const radians = Function('"use strict"; return (' + expr + ');')();
+    
+        if (!Number.isFinite(radians)) {
+          return { valid: false };
+        }
+    
+        const degrees = radians * 180 / Math.PI;
+    
+        return {
+          valid: true,
+          degrees,
+          display: original.replaceAll('pi', 'π').replaceAll('PI', 'π')
+        };
+      } catch (e) {
+        return { valid: false };
+      }
+    }
 
     function normalizeDeg(deg) {
       return ((deg % 360) + 360) % 360;
@@ -491,7 +630,7 @@
       const sweep = endDeg - startDeg;
       const largeArc = Math.abs(sweep) > 180 ? 1 : 0;
       const sweepFlag = sweep >= 0 ? 0 : 1;
-      return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} ${sweepFlag} ${end.x} ${end.y}`;
+      return 'M ' + start.x + ' ' + start.y + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' ' + sweepFlag + ' ' + end.x + ' ' + end.y;
     }
 
     function getQuadrant(norm) {
@@ -517,6 +656,63 @@
       return 360 - norm;
     }
 
+    function trianglePath(a, b, c) {
+      return 'M ' + a.x + ' ' + a.y + ' L ' + b.x + ' ' + b.y + ' L ' + c.x + ' ' + c.y + ' Z';
+    }
+
+    function setTriangleLabel(label, a, b, c) {
+      label.setAttribute('x', (a.x + b.x + c.x) / 3);
+      label.setAttribute('y', (a.y + b.y + c.y) / 3 - 8);
+    }
+
+    function setTriangleVisibility(showCurrent, showFirst) {
+      firstRefTriangle.style.display = showFirst ? 'block' : 'none';
+      firstTriangleLabel.style.display = showFirst ? 'block' : 'none';
+      firstRefArc.style.display = showFirst ? 'block' : 'none';
+      firstRefAlphaLabel.style.display = showFirst ? 'block' : 'none';
+      currentRefTriangle.style.display = showCurrent ? 'block' : 'none';
+      currentTriangleLabel.style.display = showCurrent ? 'block' : 'none';
+    }
+
+    function drawReferenceTriangles(qNum, ref) {
+      if (qNum === 0 || ref === 0 || ref === 90) {
+        setTriangleVisibility(false, false);
+        return;
+      }
+
+      const origin = { x: cx, y: cy };
+      const firstP = svgPoint(ref, r);
+      const firstFoot = { x: firstP.x, y: cy };
+
+      firstRefTriangle.setAttribute('d', trianglePath(origin, firstFoot, firstP));
+      setTriangleLabel(firstTriangleLabel, origin, firstFoot, firstP);
+
+      firstRefArc.setAttribute('d', arcPath(0, ref, 72));
+
+      const firstAlphaPos = svgPoint(ref / 2, 94);
+      firstRefAlphaLabel.setAttribute('x', firstAlphaPos.x - 10);
+      firstRefAlphaLabel.setAttribute('y', firstAlphaPos.y + 10);
+
+
+      if (qNum === 1) {
+        setTriangleVisibility(false, true);
+        return;
+      }
+
+      firstTriangleLabel.textContent = '1사분면 기준삼각형';
+
+      let currentDeg = ref;
+      if (qNum === 2) currentDeg = 180 - ref;
+      if (qNum === 3) currentDeg = 180 + ref;
+      if (qNum === 4) currentDeg = 360 - ref;
+
+      const currentP = svgPoint(currentDeg, r);
+      const currentFoot = { x: currentP.x, y: cy };
+      currentRefTriangle.setAttribute('d', trianglePath(origin, currentFoot, currentP));
+      setTriangleLabel(currentTriangleLabel, origin, currentFoot, currentP);
+      setTriangleVisibility(true, true);
+    }
+
     function signOf(func, norm) {
       const s = Math.sin(toRad(norm));
       const c = Math.cos(toRad(norm));
@@ -540,28 +736,58 @@
       return n.toFixed(3);
     }
 
-    function getFormula(func, theta, norm, ref) {
+    function getFormula(func, thetaText, norm, ref) {
       const sign = signOf(func, norm);
-      const thetaText = `${theta}°`;
-      const refText = `${ref}°`;
-      if (sign === '정의되지 않음') return `${func} ${thetaText}는 정의되지 않음`;
-      if (sign === '0') return `${func} ${thetaText} = 0`;
-      return `${func} ${thetaText} = ${sign} ${func} ${refText}`;
+    
+      if (sign === '정의되지 않음') {
+        return func + '(' + thetaText + ')는 정의되지 않습니다.';
+      }
+    
+      if (sign === '0') {
+        return func + '(' + thetaText + ') = 0입니다.';
+      }
+    
+      const signText = sign === '+' ? '양수' : '음수';
+      return func + '(' + thetaText + ')는 ' + signText + '입니다.';
     }
+
+    function getTransformFormula(func, thetaText, norm, ref) {
+      const sign = signOf(func, norm);
+      const refText = formatDeg(ref) + '°';
+    
+      if (sign === '정의되지 않음') {
+        return func + '(' + thetaText + ')는 기준각으로 값을 나타낼 수 없고, 정의되지 않습니다.';
+      }
+    
+      if (sign === '0') {
+        return func + '(' + thetaText + ') = 0입니다.';
+      }
+    
+      return func + '(' + thetaText + ') = ' + sign + ' ' + func + '(' + refText + ')';
+    }
+
 
     function updateRows(qNum) {
       for (let i = 1; i <= 4; i++) {
-        document.getElementById(`row${i}`).classList.toggle('current', i === qNum);
+        document.getElementById('row' + i).classList.toggle('current', i === qNum);
       }
     }
 
     function update() {
-      let theta = Number(angleInput.value);
-      if (!Number.isFinite(theta)) theta = 0;
-      theta = Math.max(-720, Math.min(720, theta));
-      angleInput.value = theta;
-      angleRange.value = theta;
-      rangeLabel.textContent = `θ = ${theta}°`;
+      const parsed = parseAngleInput(angleInput.value);
+      if (!parsed.valid) {
+        rangeLabel.textContent = '각 입력을 확인하세요';
+        mainFormula.textContent = '각을 숫자 또는 pi를 사용한 식으로 입력하세요.';
+        formulaDesc.textContent = '예: 150, pi/6, 2*pi/3, -pi/4';
+        setTriangleVisibility(false, false);
+        return;
+      }
+
+      const theta = parsed.degrees;
+      const sliderMin = Number(angleRange.min);
+      const sliderMax = Number(angleRange.max);
+      angleRange.value = Math.max(sliderMin, Math.min(sliderMax, theta));
+      rangeLabel.textContent = 'θ = ' + parsed.display + ' (' + formatDeg(theta) + '°)';
 
       const norm = normalizeDeg(theta);
       const ref = getReferenceAngle(norm);
@@ -571,6 +797,8 @@
       const cos = Math.cos(toRad(norm));
       const sin = Math.sin(toRad(norm));
       const p = svgPoint(norm, r);
+
+      drawReferenceTriangles(qNum, ref);
 
       ray.setAttribute('x2', p.x);
       ray.setAttribute('y2', p.y);
@@ -612,20 +840,28 @@
       refLabel.setAttribute('y', refTextPos.y);
       refLabel.style.display = qNum === 0 ? 'none' : 'block';
 
-      normValue.textContent = `${norm}°`;
+      normValue.textContent = formatDeg(norm) + '°';
+      radianValue.textContent = formatRadianFromDeg(norm);
       quadrantValue.textContent = qText;
-      refValue.textContent = `${ref}°`;
-      coordValue.textContent = `(${fmt(cos)}, ${fmt(sin)})`;
+      refValue.textContent = formatDeg(ref) + '°';
+      if (coordValue) {
+        coordValue.textContent = '(' + fmt(cos) + ', ' + fmt(sin) + ')';
+      }
 
       const sign = signOf(func, norm);
-      mainFormula.textContent = getFormula(func, theta, norm, ref);
+      mainFormula.textContent = getFormula(func, parsed.display, norm, ref);
 
       if (sign === '정의되지 않음') {
-        formulaDesc.textContent = `θ = ${norm}°에서는 cos θ = 0이므로 tan θ는 정의되지 않습니다.`;
+        formulaDesc.textContent = 'θ = ' + formatDeg(norm) + '°에서는 cos θ = 0이므로 tan θ는 정의되지 않습니다.';
       } else if (qNum === 0) {
-        formulaDesc.textContent = `θ = ${norm}°는 좌표축 위의 각입니다. 이때는 사분면의 부호보다 단위원 위 점의 좌표를 직접 확인합니다.`;
+        formulaDesc.textContent = 'θ = ' + formatDeg(norm) + '°는 좌표축 위의 각입니다. 이때는 사분면의 부호보다 단위원 위 점의 좌표를 직접 확인합니다.';
       } else {
-        formulaDesc.textContent = `기준각은 ${ref}°이고, ${qText}에서 ${func} 값은 ${sign}입니다.`;
+        const signText = sign === '+' ? '양수' : '음수';
+        formulaDesc.textContent =
+          '기준각은 ' + formatDeg(ref) + '°이고, ' +
+          qText + '에서 ' + func + ' 값은 ' + signText +
+          '입니다. 따라서 ' +
+          getTransformFormula(func, parsed.display, norm, ref) + '입니다.';
       }
 
       updateRows(qNum);
